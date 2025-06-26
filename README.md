@@ -20,6 +20,44 @@ This project models the complete guidance, navigation, and control system for a 
 - System Identification Toolbox
 - Simulink
 
+
+## File Structure
+
+```
+hypersonic-guidance-simulation/
+├── README.md
+├── .gitignore
+├── LICENSE
+├── docs/
+│   ├── project_report.pdf
+│   ├── presentation.pptx
+│   └── figures/
+├── src/
+│   ├── main_simulation.m
+│   ├── models/
+│   │   ├── vehicle_dynamics.m
+│   │   ├── atmosphere_model.m
+│   │   ├── navigation_system.m
+│   │   └── kalman_filter.m
+│   ├── simulink/
+│   │   ├── hgv_complete_model.slx
+│   │   └── subsystems/
+│   ├── utils/
+│   │   ├── plotting_functions.m
+│   │   ├── data_analysis.m
+│   │   └── validation_tools.m
+│   └── tests/
+│       ├── test_vehicle_dynamics.m
+│       └── test_kalman_filter.m
+├── data/
+│   ├── flight_test_data.mat
+│   ├── atmospheric_data.mat
+│   └── results/
+└── scripts/
+    ├── run_all_simulations.m
+    ├── generate_plots.m
+    └── parameter_sweep.m
+
 ## Quick Start
 
 ```matlab
