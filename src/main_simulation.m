@@ -32,6 +32,12 @@ vel_history = zeros(3, N);
 cmd_history = zeros(3, N);
 range_history = zeros(1, N);
 
+% Navigation system parameters
+nav_position = position;  % INS estimated position (starts accurate)
+nav_velocity = velocity;  % INS estimated velocity
+position_drift = [0; 0; 0];  % Accumulated position error
+drift_rate = 0.05;  % m/s per second drift rate
+
 %% Main Simulation Loop
 fprintf('Running simulation...\n');
 
@@ -43,24 +49,40 @@ for k = 1:N
     vel_history(:, k) = velocity;
     
     % Calculate range to target
-    relative_position = target_position - position;
+    % Update navigation system (GPS-denied with drift)
+    position_drift = position_drift + drift_rate * dt * randn(3,1);
+    nav_position = nav_position + nav_velocity * dt + position_drift;
+    nav_velocity = nav_velocity + total_acceleration * dt;  % Use previous acceleration
+    
+    % Use navigation estimate for guidance (not true position!)
+    relative_position = target_position - nav_position;  % Based on INS estimate
+    range = norm(relative_position);
+    navigation_error = norm(nav_position - position);
+    range_history(k) = range;
+    
+    % GUIDANCE
+    % Calculate range to target using NAVIGATION estimate (not true position)
+    relative_position = target_position - nav_position;  % Use nav estimate!
     range = norm(relative_position);
     range_history(k) = range;
     
-    % Simple guidance: accelerate toward target
+    % Simple guidance: accelerate toward target (based on nav estimate)
     if range > 10  % Continue until close
         los_vector = relative_position / range;  % Unit vector toward target
-        guidance_command = 300.0 * los_vector;   % 300 m/s^2 toward target
+        guidance_command = 800.0 * los_vector;   % Strong guidance
     else
         guidance_command = [0; 0; 0];           % Stop guidance when close
     end
     
     cmd_history(:, k) = guidance_command;
     
+    % Calculate navigation error for monitoring
+    navigation_error = norm(nav_position - position);
+    
     % Debug output for first 10 steps
     if k <= 10
-        fprintf('Step %d: pos=[%.0f %.0f %.0f], range=%.0f, cmd=[%.1f %.1f %.1f]\n', ...
-            k, position, range, guidance_command);
+        fprintf('Step %d: true_pos=[%.0f %.0f %.0f], nav_pos=[%.0f %.0f %.0f], nav_error=%.1f, cmd=[%.1f %.1f %.1f]\n', ...
+            k, position, nav_position, navigation_error, guidance_command);
     end
     
     % Physics integration (keep it simple)
@@ -69,7 +91,12 @@ for k = 1:N
         gravity = [0; 0; -9.81];
         total_acceleration = guidance_command + gravity;
         
-        % Simple Euler integration
+        % Update navigation system with drift (uses the total_acceleration we just calculated)
+        position_drift = position_drift + drift_rate * dt * randn(3,1);
+        nav_velocity = nav_velocity + total_acceleration * dt;  % INS velocity integration
+        nav_position = nav_position + nav_velocity * dt + position_drift;  % INS position integration
+        
+        % Simple Euler integration (for TRUE position)
         velocity = velocity + total_acceleration * dt;
         position = position + velocity * dt;
         
