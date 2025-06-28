@@ -17,9 +17,9 @@ t_final = 100;      % Total simulation time (s)
 time = 0:dt:t_final;
 N = length(time);
 
-% Vehicle initial conditions (simple scenario)
-position = [20000; 0; 10000];        % Start 20km away, 10km altitude
-velocity = [-500; 0; -20];           % Flying toward target at Mach ~1.5
+% Vehicle initial conditions (realistic scenario)
+position = [200000; 0; 25000];       % Start 200km away, 25km altitude
+velocity = [-3000; 0; -150];         % Mach 9, proper glide angle
 target_position = [0; 0; 0];         % Target at origin
 
 % Vehicle parameters
@@ -50,7 +50,7 @@ for k = 1:N
     % Simple guidance: accelerate toward target
     if range > 10  % Continue until close
         los_vector = relative_position / range;  % Unit vector toward target
-        guidance_command = 50.0 * los_vector;   % 50 m/s^2 toward target
+        guidance_command = 300.0 * los_vector;   % 300 m/s^2 toward target
     else
         guidance_command = [0; 0; 0];           % Stop guidance when close
     end
