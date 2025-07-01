@@ -28,35 +28,52 @@ hypersonic-guidance-simulation/
 ├── README.md
 ├── .gitignore
 ├── LICENSE
-├── docs/
-│   ├── project_report.pdf
-│   ├── presentation.pptx
-│   └── figures/
+├── main_simulation.m                    % Main entry point
+├── config/
+│   ├── vehicle_config.m                 % Vehicle parameters
+│   ├── sensor_config.m                  % Sensor suite configuration
+│   ├── threat_config.m                  % SAM sites, EW parameters
+│   └── environment_config.m             % Atmosphere, weather, terrain
 ├── src/
-│   ├── main_simulation.m
 │   ├── models/
-│   │   ├── vehicle_dynamics.m
-│   │   ├── atmosphere_model.m
-│   │   ├── navigation_system.m
-│   │   └── kalman_filter.m
-│   ├── simulink/
-│   │   ├── hgv_complete_model.slx
-│   │   └── subsystems/
-│   ├── utils/
-│   │   ├── plotting_functions.m
-│   │   ├── data_analysis.m
-│   │   └── validation_tools.m
-│   └── tests/
-│       ├── test_vehicle_dynamics.m
-│       └── test_kalman_filter.m
-├── data/
-│   ├── flight_test_data.mat
-│   ├── atmospheric_data.mat
-│   └── results/
-└── scripts/
-    ├── run_all_simulations.m
-    ├── generate_plots.m
-    └── parameter_sweep.m
+│   │   ├── vehicle_dynamics.m           % 6-DOF physics integration
+│   │   ├── atmosphere_model.m           % US Standard Atmosphere
+│   │   ├── sensor_models.m              % INS, GPS, TERCOM error models
+│   │   └── threat_models.m              % SAM detection, plasma effects
+│   ├── navigation/
+│   │   ├── kalman_filter.m              % EKF implementation
+│   │   ├── ins_simulation.m             % INS drift and bias modeling
+│   │   └── sensor_fusion.m              % Multi-sensor integration
+│   ├── guidance/
+│   │   ├── guidance_laws.m              % APN, terminal guidance
+│   │   ├── threat_assessment.m          % SAM detection, evasion
+│   │   └── trajectory_planning.m        % Path optimization
+│   ├── visualization/
+│   │   ├── realtime_3d.m               % Live 3D animation
+│   │   ├── analysis_plots.m            % Post-flight analysis
+│   │   └── info_panel.m                % Telemetry display
+│   └── utils/
+│       ├── helper_functions.m          % bool_to_status, etc.
+│       ├── data_export.m               % Results saving
+│       └── performance_metrics.m        % Error calculations
+├── simulink/                           % Future Simulink models
+│   ├── hgv_complete_model.slx          
+│   └── subsystems/
+├── tests/                              % Unit tests
+│   ├── test_kalman_filter.m
+│   ├── test_vehicle_dynamics.m
+│   └── test_guidance_laws.m
+├── data/                               % Simulation results
+│   ├── baseline_results.mat
+│   └── monte_carlo_results/
+├── docs/                               % Documentation
+│   ├── project_report.pdf
+│   ├── user_guide.md
+│   └── figures/
+└── scripts/                            % Batch processing
+    ├── run_monte_carlo.m
+    ├── parameter_sweep.m
+    └── generate_all_plots.m
 
 ## Quick Start
 
