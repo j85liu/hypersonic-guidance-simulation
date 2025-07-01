@@ -1,3 +1,17 @@
+%% Comprehensive Hypersonic Guidance Simulation with Advanced Features
+% Author: James Liu - Columbia University
+% 
+% COMPREHENSIVE FEATURES:
+% - 6-DOF Vehicle Dynamics with Attitude Control
+% - Multi-Sensor Fusion (INS/GPS/Terrain/Laser/IR)
+% - Advanced Guidance Laws (PN, APN, Terminal Homing)
+% - GPS Denial & Electronic Warfare Effects
+% - Moving Target with Evasive Maneuvers  
+% - Multiple Interceptor Threats
+% - Thermal Effects & Plasma Interference
+% - Real-time 3D Visualization
+% - Performance Analysis & Monte Carlo
+
 %% FIXED Comprehensive Hypersonic Guidance Simulation
 % Key fixes: EKF tuning, realistic speeds, proper guidance
 clear; close all; clc;
@@ -190,7 +204,7 @@ for k = 1:N
             elseif mach < 3
                 drag_coeff = 0.5;  % Transonic/supersonic
             else
-                drag_coeff = 0.4;  # Hypersonic
+                drag_coeff = 0.4;  % Hypersonic
             end
             
             drag_force = -0.5 * rho * speed^2 * 0.28 * drag_coeff * (velocity / speed);
