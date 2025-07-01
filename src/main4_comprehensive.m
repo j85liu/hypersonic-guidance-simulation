@@ -1,5 +1,6 @@
 %% Comprehensive Hypersonic Guidance Simulation with Advanced Features
 % Author: James Liu - Columbia University
+% Course: MEBM E4439 - Modeling and Identification of Dynamic Systems
 % 
 % COMPREHENSIVE FEATURES:
 % - 6-DOF Vehicle Dynamics with Attitude Control
@@ -118,8 +119,8 @@ environment.weather_visibility = 8000;                 % m (affects laser/IR)
 % State: [pos(3), vel(3), attitude(3), ang_rates(3)]
 ekf = struct();
 ekf.state = vehicle_state;
-ekf.P = diag([500^2*ones(1,3), 50^2*ones(1,3), 0.1^2*ones(1,3), 0.01^2*ones(1,3)]);
-ekf.Q = diag([5^2*ones(1,3), 2^2*ones(1,3), 0.01^2*ones(1,3), 0.001^2*ones(1,3)]);
+ekf.P = diag([200^2*ones(1,3), 20^2*ones(1,3), 0.05^2*ones(1,3), 0.01^2*ones(1,3)]);
+ekf.Q = diag([2^2*ones(1,3), 1^2*ones(1,3), 0.001^2*ones(1,3), 0.0001^2*ones(1,3)]);
 
 %% Storage Arrays
 % Vehicle states
@@ -351,8 +352,9 @@ for k = 1:N
     measurement_types = [measurement_types; 1];  % Type 1 = INS
     
     H_ins = [eye(9), zeros(9,3)];  % INS measures position, velocity, attitude
-    R_ins = diag([sensors.ins.drift_rate^2 * ones(1,3) * (1 + flight_time_hours)^2, ...
-                  2^2 * ones(1,3), 0.01^2 * ones(1,3)]) * thermal_factor^2;
+    % More conservative INS noise model
+    R_ins = diag([max(10^2, sensors.ins.drift_rate^2 * (1 + flight_time_hours)^2) * ones(1,3), ...
+                  5^2 * ones(1,3), 0.05^2 * ones(1,3)]) * thermal_factor^2;
     
     H_combined = [H_combined; H_ins];
     R_combined = blkdiag(R_combined, R_ins);
@@ -393,9 +395,11 @@ for k = 1:N
         measurements = [measurements; laser_measurement];
         measurement_types = [measurement_types; 4];  % Type 4 = Laser
         
-        % Laser gives target position, relates to vehicle-target geometry
-        relative_pos = target.position - position;
-        H_laser = [-eye(3), zeros(3,9)];  % Negative because it's relative
+        % Laser gives target position - create pseudo-measurement for relative position
+        relative_pos_measured = laser_measurement - ekf.state(1:3);
+        measurements(end-2:end) = relative_pos_measured;  % Replace with relative measurement
+        
+        H_laser = [eye(3), zeros(3,9)];  % Measures relative position indirectly
         R_laser = (sensors.laser.accuracy * sensors.laser.weather_factor)^2 * eye(3);
         
         H_combined = [H_combined; H_laser];
@@ -412,13 +416,17 @@ for k = 1:N
     ekf.P = F * ekf.P * F' + ekf.Q;
     
     % Update step (multi-sensor fusion)
-    if ~isempty(measurements)
-        S = H_combined * ekf.P * H_combined' + R_combined;
-        K = ekf.P * H_combined' / S;
-        
-        innovation = measurements - H_combined * ekf.state;
-        ekf.state = ekf.state + K * innovation;
-        ekf.P = (eye(12) - K * H_combined) * ekf.P;
+    if ~isempty(measurements) && size(H_combined, 1) > 0
+        % Ensure measurement vector matches H matrix dimensions
+        expected_measurements = size(H_combined, 1);
+        if length(measurements) == expected_measurements
+            S = H_combined * ekf.P * H_combined' + R_combined;
+            K = ekf.P * H_combined' / S;
+            
+            innovation = measurements - H_combined * ekf.state;
+            ekf.state = ekf.state + K * innovation;
+            ekf.P = (eye(12) - K * H_combined) * ekf.P;
+        end
     end
     
     % Extract EKF estimates
@@ -523,6 +531,12 @@ for k = 1:N
         
         % Total acceleration
         total_acceleration = guidance_command + gravity + drag_acceleration;
+        
+        % Reasonable acceleration limits for hypersonic vehicle
+        max_total_accel = 300;  % m/s²
+        if norm(total_acceleration) > max_total_accel
+            total_acceleration = total_acceleration * (max_total_accel / norm(total_acceleration));
+        end
         
         % Update translational motion
         vehicle_state(4:6) = vehicle_state(4:6) + total_acceleration * dt;
@@ -815,7 +829,7 @@ summary_text = sprintf([
     avg_ins_error - avg_ekf_error, final_ins_error - final_ekf_error);
 
 text(0.05, 0.95, summary_text, 'Units', 'normalized', 'VerticalAlignment', 'top', ...
-     'FontSize', 10, 'FontFamily', 'monospace');
+     'FontSize', 10, 'FontName', 'FixedWidth');
 axis off;
 
 sgtitle('Comprehensive Hypersonic Guidance Mission Analysis', 'FontSize', 16, 'FontWeight', 'bold');
