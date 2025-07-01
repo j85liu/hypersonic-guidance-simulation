@@ -29,51 +29,30 @@ hypersonic-guidance-simulation/
 ├── .gitignore
 ├── LICENSE
 ├── main_simulation.m                    % Main entry point
-├── config/
-│   ├── vehicle_config.m                 % Vehicle parameters
-│   ├── sensor_config.m                  % Sensor suite configuration
-│   ├── threat_config.m                  % SAM sites, EW parameters
-│   └── environment_config.m             % Atmosphere, weather, terrain
-├── src/
-│   ├── models/
-│   │   ├── vehicle_dynamics.m           % 6-DOF physics integration
-│   │   ├── atmosphere_model.m           % US Standard Atmosphere
-│   │   ├── sensor_models.m              % INS, GPS, TERCOM error models
-│   │   └── threat_models.m              % SAM detection, plasma effects
-│   ├── navigation/
-│   │   ├── kalman_filter.m              % EKF implementation
-│   │   ├── ins_simulation.m             % INS drift and bias modeling
-│   │   └── sensor_fusion.m              % Multi-sensor integration
-│   ├── guidance/
-│   │   ├── guidance_laws.m              % APN, terminal guidance
-│   │   ├── threat_assessment.m          % SAM detection, evasion
-│   │   └── trajectory_planning.m        % Path optimization
-│   ├── visualization/
-│   │   ├── realtime_3d.m               % Live 3D animation
-│   │   ├── analysis_plots.m            % Post-flight analysis
-│   │   └── info_panel.m                % Telemetry display
-│   └── utils/
-│       ├── helper_functions.m          % bool_to_status, etc.
-│       ├── data_export.m               % Results saving
-│       └── performance_metrics.m        % Error calculations
-├── simulink/                           % Future Simulink models
-│   ├── hgv_complete_model.slx          
-│   └── subsystems/
-├── tests/                              % Unit tests
-│   ├── test_kalman_filter.m
-│   ├── test_vehicle_dynamics.m
-│   └── test_guidance_laws.m
-├── data/                               % Simulation results
-│   ├── baseline_results.mat
-│   └── monte_carlo_results/
-├── docs/                               % Documentation
-│   ├── project_report.pdf
-│   ├── user_guide.md
-│   └── figures/
-└── scripts/                            % Batch processing
-    ├── run_monte_carlo.m
-    ├── parameter_sweep.m
-    └── generate_all_plots.m
+└── src/
+    ├── config/
+    │   ├── simulation_config.m          % Simulation parameters and settings
+    │   ├── vehicle_config.m             % Vehicle properties and parameters
+    │   ├── sensor_config.m              % Sensor suite configuration
+    │   ├── threat_config.m              % Threat environment setup
+    │   └── environment_config.m         % Atmospheric and environmental parameters
+    ├── models/
+    │   ├── vehicle_dynamics.m           % 6-DOF vehicle dynamics integration
+    │   └── atmosphere_model.m           % Atmospheric properties calculation
+    ├── navigation/
+    │   ├── navigation_system.m          % Multi-sensor navigation manager
+    │   ├── extended_kalman_filter.m     % EKF implementation
+    │   ├── ins_simulation.m             % INS error modeling
+    │   └── sensor_measurements.m        % Individual sensor measurement models
+    ├── guidance/
+    │   ├── guidance_system.m            % Main guidance law coordinator
+    │   └── threat_assessment.m          % Threat detection and evasion
+    ├── visualization/
+    │   ├── real_time_display.m          % 3D real-time visualization
+    │   └── analysis_plots.m             % Post-simulation analysis plots
+    └── utils/
+        ├── helper_functions.m           % Utility functions (bool_to_status, etc.)
+        └── data_export.m                % Results saving and export
 
 ## Quick Start
 
