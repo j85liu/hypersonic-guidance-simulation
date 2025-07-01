@@ -1,6 +1,5 @@
 %% FIXED Comprehensive Hypersonic Guidance Simulation
 % Author: James Liu - Columbia University
-% Course: MEBM E4439 - Modeling and Identification of Dynamic Systems
 % 
 % COMPREHENSIVE FEATURES WITH FIXED EKF:
 % - 6-DOF Vehicle Dynamics with Attitude Control
