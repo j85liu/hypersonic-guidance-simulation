@@ -43,10 +43,10 @@ function main_simulation()
         %% Load All Configurations
         fprintf('Loading configurations...\n');
         sim_config = simulation_config();
-        [vehicle_config, initial_state] = vehicle_config();
-        sensors_config = sensor_config();
-        threats_config = threat_config();
-        [environment_config, guidance_config, target_config] = environment_config();
+        [vehicle_cfg, initial_state] = vehicle_config();
+        sensors_cfg = sensor_config();
+        threats_cfg = threat_config();
+        [environment_cfg, guidance_cfg, target_cfg] = environment_config();
         
         fprintf('✅ All configurations loaded successfully\n');
         
@@ -57,12 +57,12 @@ function main_simulation()
         dt = sim_config.timing.dt;
         
         % Initialize state and history arrays
-        [vehicle_state, storage_arrays] = initialize_simulation_state(initial_state, target_config, N);
+        [vehicle_state, storage_arrays] = initialize_simulation_state(initial_state, target_cfg, N);
         
         % Initialize target state
         target_state = struct();
-        target_state.position = target_config.initial_position;
-        target_state.velocity = target_config.initial_velocity;
+        target_state.position = target_cfg.initial_position;
+        target_state.velocity = target_cfg.initial_velocity;
         
         %% Initialize Visualization
         viz_handles = real_time_display('initialize', sim_config.features.enable_real_time_viz);
@@ -79,19 +79,19 @@ function main_simulation()
             velocity = vehicle_state(4:6);
             
             %% Update Target State
-            target_state = update_target_behavior(target_state, target_config, dt);
+            target_state = update_target_behavior(target_state, target_cfg, dt);
             
             %% Calculate Environmental Effects
             environment_effects = atmosphere_model('environmental_effects', ...
-                                                  position, velocity, environment_config);
+                                                  position, velocity, environment_cfg);
             
             %% Assess Threats
             [threats_detected, active_threats, threat_status] = ...
-                threat_assessment(position, threats_config.sam_sites, k);
+                threat_assessment(position, threats_cfg.sam_sites, k);
             
             %% Multi-Sensor Navigation
             [nav_estimates, sensor_measurements, sensor_availability] = ...
-                navigation_system(vehicle_state, target_state.position, sensors_config, ...
+                navigation_system(vehicle_state, target_state.position, sensors_cfg, ...
                                 environment_effects, struct('detected', threats_detected), current_time, dt);
             
             %% Guidance System
@@ -109,10 +109,10 @@ function main_simulation()
             % Calculate guidance command
             guidance_command = guidance_system(guidance_position, guidance_velocity, ...
                                              target_state.position, target_state.velocity, ...
-                                             guidance_config, threats_detected, active_threats, current_time);
+                                             guidance_cfg, threats_detected, active_threats, current_time);
             
             %% Vehicle Dynamics Integration
-            vehicle_state = vehicle_dynamics(vehicle_state, guidance_command, vehicle_config, ...
+            vehicle_state = vehicle_dynamics(vehicle_state, guidance_command, vehicle_cfg, ...
                                            environment_effects, dt);
             
             %% Store Simulation Data
@@ -123,7 +123,7 @@ function main_simulation()
             %% Real-Time Visualization Update
             if sim_config.features.enable_real_time_viz
                 update_visualization(viz_handles, k, vehicle_state, target_state, sensor_availability, ...
-                                   threat_status, threats_config.sam_sites, guidance_command, current_time, ...
+                                   threat_status, threats_cfg.sam_sites, guidance_command, current_time, ...
                                    storage_arrays, guidance_source, active_threats, environment_effects);
             end
             
@@ -148,7 +148,7 @@ function main_simulation()
         fprintf('\n=== SIMULATION COMPLETE ===\n');
         
         % Create comprehensive results structure
-        results = create_results_structure(storage_arrays, time, k_final, target_config, guidance_config);
+        results = create_results_structure(storage_arrays, time, k_final, target_cfg, guidance_cfg);
         
         % Print performance analysis
         if sim_config.analysis.detailed_summary
